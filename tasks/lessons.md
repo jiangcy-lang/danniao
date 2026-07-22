@@ -40,5 +40,5 @@
 
 ## 2026-07-22 — 开发后自动同步 GitHub
 
-- **约定**：项目 hook（`stop` / `sessionEnd`）调用 `.cursor/hooks/sync_to_remote.py`，有改动则 commit + push 到 `origin`。
-- **约束**：fail-open（同步失败不阻断 Agent）；日志在 `.cursor/hooks/sync_to_remote.log`；密钥类文件须在 `.gitignore`。
+- **约定**：项目 hook（`stop` / `sessionEnd`）调用 `.cursor/hooks/sync_to_remote.py`，有改动则 commit + push 到 `origin`（`git@github.com:jiangcy-lang/danniao.git`）。
+- **约束**：fail-open；用 `commit-tree` 避免旧 Git/`--trailer` 问题；SSH 经 `.cursor/hooks/ssh_wrapper.cmd` 走 Windows OpenSSH；日志 `.cursor/hooks/sync_to_remote.log`。
