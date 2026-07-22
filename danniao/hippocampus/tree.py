@@ -26,10 +26,17 @@ class DynamicCognitiveTree:
         vector_store: HippocampusVectorStore | None = None,
         embedder: Embedder | None = None,
         chroma_dir: str | Path = ".chroma_hippocampus",
+        ephemeral_vectors: bool = False,
     ) -> None:
         self.graph = nx.DiGraph()
         self.embedder = embedder or HashTextEmbedder()
-        self.vector_store = vector_store or HippocampusVectorStore(chroma_dir)
+        self.vector_store = vector_store or HippocampusVectorStore(
+            chroma_dir,
+            ephemeral=ephemeral_vectors,
+        )
+
+    def close(self) -> None:
+        self.vector_store.close()
 
     def _embed_label(self, label: str) -> list[float]:
         return self.embedder.encode_text(label)

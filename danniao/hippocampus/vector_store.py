@@ -14,17 +14,34 @@ from danniao.hippocampus.embeddings import cosine_similarity
 class HippocampusVectorStore:
     COLLECTION = "hippocampus_nodes"
 
-    def __init__(self, persist_dir: str | Path = ".chroma_hippocampus") -> None:
-        self.persist_dir = Path(persist_dir)
-        self.persist_dir.mkdir(parents=True, exist_ok=True)
-        self._client = chromadb.PersistentClient(
-            path=str(self.persist_dir),
-            settings=Settings(anonymized_telemetry=False),
-        )
+    def __init__(
+        self,
+        persist_dir: str | Path | None = ".chroma_hippocampus",
+        *,
+        ephemeral: bool = False,
+    ) -> None:
+        self._ephemeral = ephemeral
+        if ephemeral:
+            self.persist_dir = None
+            self._client = chromadb.EphemeralClient(
+                settings=Settings(anonymized_telemetry=False),
+            )
+        else:
+            self.persist_dir = Path(persist_dir or ".chroma_hippocampus")
+            self.persist_dir.mkdir(parents=True, exist_ok=True)
+            self._client = chromadb.PersistentClient(
+                path=str(self.persist_dir),
+                settings=Settings(anonymized_telemetry=False),
+            )
         self._collection = self._client.get_or_create_collection(
             name=self.COLLECTION,
             metadata={"hnsw:space": "cosine"},
         )
+
+    def close(self) -> None:
+        """释放客户端引用（Windows 下便于测试清理临时目录）。"""
+        self._collection = None  # type: ignore[assignment]
+        self._client = None  # type: ignore[assignment]
 
     def upsert_node(
         self,

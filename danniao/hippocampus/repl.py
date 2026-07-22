@@ -18,6 +18,8 @@ def format_result(gate_result) -> str:
         lines.append(f"  余弦相似度: {gate_result.cosine_similarity:.3f}")
     if gate_result.input_modality:
         lines.append(f"  模态: {gate_result.input_modality}")
+    if gate_result.message:
+        lines.append(f"  说明: {gate_result.message}")
     return "\n".join(lines)
 
 

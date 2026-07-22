@@ -1,16 +1,22 @@
 # DanNiao Todo
 
-## 本轮：海马体动态认知树
+## 已完成
 
-- [x] 权威文档对齐（`docs/00` / `01` / `README`）
-- [x] 修订实现计划（含最小 `describe` 输出）
-- [x] 实现 `danniao/hippocampus`（树 + 特征 + 门控）
-- [x] 验收测试通过
-- [x] 更新 lessons / 本文件审查结论
+- [x] 权威文档（`docs/00` / `01` / `02` / `README`）
+- [x] Step 1 动态认知树 + 文本门控 + `describe` + REPL
+- [x] Step 1.5 向量双写（ChromaDB）+ 余弦匹配门控 + 多模态接口预留
+- [x] Git 同步 hook
+
+## 待做
+
+- [ ] Step 2 动力学引擎（激活增强 / 全局衰减）
+- [ ] Step 3 好奇心独立模块
+- [ ] Step 4 环境交互闭环
+- [ ] 可选：安装 `sentence-transformers` / CLIP 做真实多模态验收
 
 ## 审查
 
-- 文档：Markdown 为权威；旧 docx 扁平预置作废；划界与输出契约已写清。
-- 代码：空图起步；门控区分常规激活 / 新维度繁衍；`describe` 提供最小表达。
-- 验收：`pytest tests/test_cognitive_tree_acceptance.py` 通过（苹果孤立 → 繁衍 → 不繁衍 → describe）。
-- 未做：Step 2–4、docx 二进制改写、LLM 抽取。
+- 文本验收：`pytest tests/test_cognitive_tree_acceptance.py`
+- 向量验收：`pytest tests/test_vector_hippocampus.py`
+- 交互演示：`python -m danniao.hippocampus.repl demo`
+- 多模态规范：`docs/02-multimodal-embedding-hippocampus.md`
