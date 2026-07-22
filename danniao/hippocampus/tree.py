@@ -1,12 +1,16 @@
-"""动态认知树：主干 + 维度特征子节点，空图起步，禁止扁平预置。"""
+"""动态认知树：主干 + 维度特征子节点；NetworkX 逻辑结构 + ChromaDB 向量双写。"""
 
 from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import networkx as nx
+
+from danniao.hippocampus.embeddings import Embedder, HashTextEmbedder
+from danniao.hippocampus.vector_store import HippocampusVectorStore
 
 
 def _utc_now() -> str:
@@ -14,10 +18,50 @@ def _utc_now() -> str:
 
 
 class DynamicCognitiveTree:
-    """NetworkX 实现的渐进式认知树（海马体记忆底座）。"""
+    """渐进式认知树：树结构 + 节点 embedding（禁止纯字符串存储）。"""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        vector_store: HippocampusVectorStore | None = None,
+        embedder: Embedder | None = None,
+        chroma_dir: str | Path = ".chroma_hippocampus",
+    ) -> None:
         self.graph = nx.DiGraph()
+        self.embedder = embedder or HashTextEmbedder()
+        self.vector_store = vector_store or HippocampusVectorStore(chroma_dir)
+
+    def _embed_label(self, label: str) -> list[float]:
+        return self.embedder.encode_text(label)
+
+    def _sync_embedding(
+        self,
+        node_id: str,
+        *,
+        concept: str,
+        kind: str,
+        dimension: str | None = None,
+        value: str | None = None,
+        parent_trunk: str | None = None,
+        label_for_embed: str | None = None,
+    ) -> None:
+        """写入或更新向量库中的节点 embedding。"""
+        text = label_for_embed or concept
+        embedding = self._embed_label(text)
+        self.vector_store.upsert_node(
+            node_id,
+            embedding,
+            concept=concept,
+            kind=kind,
+            dimension=dimension,
+            value=value,
+            parent_trunk=parent_trunk,
+        )
+        if node_id in self.graph:
+            self.graph.nodes[node_id]["embedding_id"] = node_id
+
+    def has_embedding(self, node_id: str) -> bool:
+        return self.vector_store.get_embedding(node_id) is not None
 
     # ---------- 写入 ----------
 
@@ -31,8 +75,15 @@ class DynamicCognitiveTree:
             "kind": "trunk",
             "access_weight": 0.1,
             "creation_time": _utc_now(),
+            "embedding_id": concept,
         }
         self.graph.add_node(concept, **data)
+        self._sync_embedding(
+            concept,
+            concept=concept,
+            kind="trunk",
+            label_for_embed=concept,
+        )
         return data
 
     def add_feature_child(
@@ -57,6 +108,16 @@ class DynamicCognitiveTree:
                 value=value,
                 access_weight=0.1,
                 creation_time=_utc_now(),
+                embedding_id=child_id,
+            )
+            self._sync_embedding(
+                child_id,
+                concept=child_id,
+                kind="feature",
+                dimension=dimension,
+                value=value,
+                parent_trunk=trunk,
+                label_for_embed=f"{trunk} {dimension} {value}",
             )
         now = _utc_now()
         if self.graph.has_edge(trunk, child_id):
@@ -86,6 +147,14 @@ class DynamicCognitiveTree:
     def has_feature(self, trunk: str, dimension: str, value: str) -> bool:
         child_id = f"{dimension}-{value}"
         return self.graph.has_edge(trunk, child_id)
+
+    def match_trunk_by_vector(
+        self,
+        query_embedding: list[float],
+        *,
+        threshold: float = 0.85,
+    ) -> tuple[str | None, float]:
+        return self.vector_store.best_trunk_match(query_embedding, threshold=threshold)
 
     # ---------- 查询 / 最小表达 ----------
 
@@ -135,9 +204,9 @@ class DynamicCognitiveTree:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     @classmethod
-    def load_json(cls, path: str) -> DynamicCognitiveTree:
+    def load_json(cls, path: str, **kwargs: Any) -> DynamicCognitiveTree:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
-        tree = cls()
+        tree = cls(**kwargs)
         tree.graph = nx.node_link_graph(data, directed=True)
         return tree

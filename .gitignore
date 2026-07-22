@@ -21,4 +21,4 @@ Thumbs.db
 Desktop.ini
 
 # Hook / runtime logs
-.cursor/hooks/*.log
+.chroma_hippocampus/

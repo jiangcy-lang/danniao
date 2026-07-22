@@ -12,9 +12,10 @@
 ## 2. 技术栈
 
 - Python 3.9+  
-- NetworkX `DiGraph`（内存认知树）  
-- JSON 持久化（`nx.node_link_data`）  
-- 特征抽取 MVP：规则词典（可替换，门控接口不变）
+- NetworkX `DiGraph`（逻辑认知树）  
+- **ChromaDB**（节点 embedding 物理存储与检索，见 [`02-multimodal-embedding-hippocampus.md`](02-multimodal-embedding-hippocampus.md)）  
+- JSON 持久化（树结构 `nx.node_link_data`；向量库独立 persist）  
+- 文本 MVP：规则词典（Step 1 验收）；Step 1.5 起文本同步写入 embedding
 
 ## 3. 节点与边
 
@@ -26,6 +27,9 @@
 | `kind` | `"trunk"` |
 | `access_weight` | 访问/激活强度，常规提及时提升 |
 | `creation_time` | ISO 8601 |
+| `embedding_id` | 向量库中的 id（与 `node_id` 一致） |
+
+> **补充**：每个节点必须有 embedding；`concept` 仅为标签。详见 `02-multimodal-embedding-hippocampus.md`。
 
 ### 子节点（dimension-feature）
 

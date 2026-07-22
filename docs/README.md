@@ -8,7 +8,8 @@
 | 文档 | 内容 |
 |------|------|
 | [00-architecture.md](00-architecture.md) | 整体架构、模块划界、吸收/输出契约、人脑映射 |
-| [01-hippocampus-cognitive-tree.md](01-hippocampus-cognitive-tree.md) | 动态认知树、信息门控、验收标准（取代旧 Step 1 扁平初始化） |
+| [01-hippocampus-cognitive-tree.md](01-hippocampus-cognitive-tree.md) | 动态认知树、信息门控、文本 MVP 验收 |
+| [02-multimodal-embedding-hippocampus.md](02-multimodal-embedding-hippocampus.md) | 向量底座、多模态编码、余弦匹配与生长联动 |
 
 ## 历史参考（docx，部分过时）
 

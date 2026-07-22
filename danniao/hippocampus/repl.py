@@ -14,8 +14,10 @@ def format_result(gate_result) -> str:
     ]
     if gate_result.spawned:
         lines.append(f"  新节点: {', '.join(gate_result.spawned)}")
-    if gate_result.message:
-        lines.append(f"  说明: {gate_result.message}")
+    if gate_result.cosine_similarity is not None:
+        lines.append(f"  余弦相似度: {gate_result.cosine_similarity:.3f}")
+    if gate_result.input_modality:
+        lines.append(f"  模态: {gate_result.input_modality}")
     return "\n".join(lines)
 
 

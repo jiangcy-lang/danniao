@@ -42,3 +42,8 @@
 
 - **约定**：项目 hook（`stop` / `sessionEnd`）调用 `.cursor/hooks/sync_to_remote.py`，有改动则 commit + push 到 `origin`（`git@github.com:jiangcy-lang/danniao.git`）。
 - **约束**：fail-open；用 `commit-tree` 避免旧 Git/`--trailer` 问题；SSH 经 `.cursor/hooks/ssh_wrapper.cmd` 走 Windows OpenSSH；日志 `.cursor/hooks/sync_to_remote.log`。
+
+## 2026-07-22 — 多模态与向量海马体
+
+- **补充**：节点禁止纯字符串存储；须 embedding 双写（NetworkX + ChromaDB）；匹配用余弦相似度 τ=0.85；非文本须 CLIP 等编码后再入门控。
+- **实现约束**：见 `docs/02-multimodal-embedding-hippocampus.md`；文本 MVP 验收保留；向量阶段独立测试 `tests/test_vector_hippocampus.py`。
