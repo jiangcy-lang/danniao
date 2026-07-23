@@ -1,27 +1,43 @@
-# DanNiao 文档索引（以本目录 Markdown 为准）
+# DanNiao 文档索引
 
-> **认知一致性声明**：自 2026-07-22 起，架构与海马体规范以本目录 `.md` 为唯一实现依据。  
-> 同目录下历史 `.docx` 仅作背景参考；其中与 Markdown **冲突的条款一律作废**（尤其是 `01` 的扁平预置 8 节点）。
+> **权威来源**：[`丹鸟 (DanNiao) 核心架构与工程实施总规范.docx`](./丹鸟%20(DanNiao)%20核心架构与工程实施总规范.docx)  
+> **可执行同步版**：本目录 Markdown（与 docx 对齐，docx 更新后须同步纠偏）。
 
-## 权威文档
+## 规范文档
 
 | 文档 | 内容 |
 |------|------|
-| [00-architecture.md](00-architecture.md) | 整体架构、模块划界、吸收/输出契约、人脑映射 |
-| [01-hippocampus-cognitive-tree.md](01-hippocampus-cognitive-tree.md) | 动态认知树、信息门控、文本 MVP 验收 |
-| [02-multimodal-embedding-hippocampus.md](02-multimodal-embedding-hippocampus.md) | 向量底座、多模态编码、余弦匹配与生长联动 |
+| [00-master-spec.md](00-master-spec.md) | 总规范同步版：认知树、统一向量-图空间、分层存储、动力学、门控、七步路线图、代际传承与外骨骼（第 7 节） |
+| [00-architecture.md](00-architecture.md) | 模块划界、分层存储架构、人脑映射、输出契约、成长阶段（含传承期） |
+| [01-hippocampus-cognitive-tree.md](01-hippocampus-cognitive-tree.md) | 海马体实现细则：向量节点、分层存储、门控（含传承分拣 §4.1）、扩散激活、验收清单 |
+| [danniao-vector-node-redesign/](../danniao-vector-node-redesign/danniao-vector-node-redesign.html) | 向量节点架构重构 + 分层存储设计报告（十大诊断、六大子系统、路线图） |
 
-## 历史参考（docx，部分过时）
+## 架构演进（2026-07-22）
+
+- **向量即节点**：节点本体 = 向量，标签是投影。统一向量-图空间取代双轨存储。
+- **分层存储**：原始日志（SQLite 全留存）→ 活跃向量（ChromaDB 内存 + NetworkX）→ 归档向量（磁盘，淡化可唤起）。
+- **表达层渐进升级**：Step 1–5 模板拼接 → Step 6 小型 LLM 解码器 → Step 7+ 按需升级。LLM 仅做语言解码，不存记忆。
+- **持续心智**：Step 5 引入 `ContinuousMind`，丹鸟从被动库变为自主生命体。**没有 tick 循环**——感知流、动力学流、激活扩散流、好奇心流并行持续运行，一直睁眼看世界。
+- **设计原则修订**：原"沿真实轨迹渐进成长"修订为"知识可继承但必须经认知机制消化"。继承与质疑不矛盾，由预测误差门控统一调度（低误差吸收 ~95%、中误差繁衍 ~4%、高误差质疑 ~1%）。
+- **代际传承**：新增"读大学"模型——父代巩固知识编为教材，子代通过门控消化学习，毕业出厂即可挂载外骨骼参与工作。详见总规范第 7 节。
+
+## docx 文档
 
 | 文档 | 状态 |
 |------|------|
-| 丹鸟创世指南 | 愿景与三大法则仍有效；实现细节以 `00`/`01` 为准 |
-| 类脑…设计方案 / _edited | 远期愿景参考 |
-| 01–04 模块规范.docx | **部分过时**：以 Markdown 修正为准 |
-| Step 1：构建海马体.docx | **过时**：勿再按「预置 8 节点」实现 |
-| 1. 认知树的「渐进式生长」机制.docx | 与造物主修正方向一致；细则见 `01-hippocampus-cognitive-tree.md` |
+| **核心架构与工程实施总规范.docx** | **当前权威** |
+| 丹鸟创世指南 | 愿景与三大法则仍有效 |
+| 类脑…设计方案 | 远期愿景 |
 
-## 实现代码
+> 已清理的过时文档：01–04 模块规范、Step 1 docx、_edited 编辑稿（均被总规范 + Markdown 同步版取代）。
 
-- 包路径：`danniao/hippocampus/`
-- 验收：`tests/test_cognitive_tree_acceptance.py`
+## 代码与测试
+
+```
+danniao/                  # 核心源码
+  hippocampus/            # 海马体：门控 + 动力学 + 扩散激活 + 向量存储
+  motivation/             # 动机：内稳态 + 奖励系统 + 探索引擎
+  expression/             # 表达：模板 + LLM (qwen3.5:2b)
+  mind/                   # 心智：持续心智（四条流并行，无 tick）
+tests/                    # 133 个测试（含 12 个 Ollama 集成测试）
+```
