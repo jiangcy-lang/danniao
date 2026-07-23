@@ -1,12 +1,6 @@
 networkx>=3.1
+numpy>=1.24.0
+requests>=2.28.0
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
 pytest>=7.4
-chromadb>=0.4
-numpy>=1.24
-
-# 可选：高质量文本嵌入
-# sentence-transformers>=2.2
-
-# 可选：多模态 CLIP
-# open-clip-torch
-# torch
-# pillow

@@ -1,24 +1,11 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
 .venv/
-venv/
+.danniao_chroma/
+.danniao_memory.db
+__pycache__/
+*.pyc
+*.pyo
 .pytest_cache/
-.coverage
-htmlcov/
-
-# Secrets & local
-.env
-.env.*
-!.env.example
-
-# IDE / OS
-.idea/
-.vscode/
-*.swp
-Thumbs.db
-Desktop.ini
-
-# Hook / runtime logs
-.chroma_hippocampus/
+.cursor/
+.trae/
+.trae-html-share-packages/
+danniao-vector-node-redesign/
