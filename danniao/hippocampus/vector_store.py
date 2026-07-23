@@ -1,121 +1,62 @@
-"""ChromaDB 向量存储：节点 embedding 物理底座。"""
+"""向量轨接口（总规范 §2 / Step 4 预留）。
+
+向量即节点重构后，VectorStore 是向量视图的抽象接口。
+实现见 ``chroma_store.py``（ChromaDB）和 ``NullVectorStore``（空占位）。
+"""
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
-
-import chromadb
-from chromadb.config import Settings
-
-from danniao.hippocampus.embeddings import cosine_similarity
+from abc import ABC, abstractmethod
+from typing import Any, Sequence
 
 
-class HippocampusVectorStore:
-    COLLECTION = "hippocampus_nodes"
+class VectorStore(ABC):
+    """向量数据库抽象：余弦相似度检索节点。"""
 
-    def __init__(
-        self,
-        persist_dir: str | Path | None = ".chroma_hippocampus",
-        *,
-        ephemeral: bool = False,
-    ) -> None:
-        self._ephemeral = ephemeral
-        if ephemeral:
-            self.persist_dir = None
-            self._client = chromadb.EphemeralClient(
-                settings=Settings(anonymized_telemetry=False),
-            )
-        else:
-            self.persist_dir = Path(persist_dir or ".chroma_hippocampus")
-            self.persist_dir.mkdir(parents=True, exist_ok=True)
-            self._client = chromadb.PersistentClient(
-                path=str(self.persist_dir),
-                settings=Settings(anonymized_telemetry=False),
-            )
-        self._collection = self._client.get_or_create_collection(
-            name=self.COLLECTION,
-            metadata={"hnsw:space": "cosine"},
-        )
-
-    def close(self) -> None:
-        """释放客户端引用（Windows 下便于测试清理临时目录）。"""
-        self._collection = None  # type: ignore[assignment]
-        self._client = None  # type: ignore[assignment]
-
-    def upsert_node(
+    @abstractmethod
+    def upsert(
         self,
         node_id: str,
-        embedding: list[float],
+        vector: Sequence[float],
         *,
-        concept: str,
-        kind: str,
-        dimension: str | None = None,
-        value: str | None = None,
-        parent_trunk: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
-        metadata: dict[str, Any] = {
-            "concept": concept,
-            "kind": kind,
-            "dimension": dimension or "",
-            "value": value or "",
-            "parent_trunk": parent_trunk or "",
-        }
-        self._collection.upsert(
-            ids=[node_id],
-            embeddings=[embedding],
-            metadatas=[metadata],
-            documents=[concept],
-        )
+        """插入或更新向量节点。
 
-    def get_embedding(self, node_id: str) -> list[float] | None:
-        got = self._collection.get(ids=[node_id], include=["embeddings"])
-        if not got["ids"]:
-            return None
-        emb = got["embeddings"][0]
-        return emb if emb is not None else None
+        Args:
+            node_id: 节点唯一标识
+            vector: 嵌入向量
+            metadata: 可选元数据（label / kind / modality 等）
+        """
+        ...
 
-    def query_trunks(
+    @abstractmethod
+    def search(
         self,
-        query_embedding: list[float],
+        vector: Sequence[float],
         *,
         top_k: int = 5,
-    ) -> list[tuple[str, float, dict[str, Any]]]:
-        """返回 [(node_id, similarity, metadata), ...] 仅 trunk。"""
-        if self._collection.count() == 0:
-            return []
-        result = self._collection.query(
-            query_embeddings=[query_embedding],
-            n_results=min(top_k, self._collection.count()),
-            include=["metadatas", "distances"],
-        )
-        hits: list[tuple[str, float, dict[str, Any]]] = []
-        for node_id, dist, meta in zip(
-            result["ids"][0],
-            result["distances"][0],
-            result["metadatas"][0],
-        ):
-            if meta.get("kind") != "trunk":
-                continue
-            # Chroma cosine distance: 0 = identical; similarity ≈ 1 - distance
-            sim = 1.0 - float(dist)
-            hits.append((node_id, sim, meta))
-        hits.sort(key=lambda x: x[1], reverse=True)
-        return hits
+        threshold: float = 0.7,
+    ) -> list[tuple[str, float]]:
+        """按向量相似度检索。
 
-    def best_trunk_match(
-        self,
-        query_embedding: list[float],
-        *,
-        threshold: float = 0.85,
-    ) -> tuple[str | None, float]:
-        hits = self.query_trunks(query_embedding, top_k=1)
-        if not hits:
-            return None, 0.0
-        node_id, sim, _ = hits[0]
-        if sim >= threshold:
-            return node_id, sim
-        return None, sim
+        Args:
+            vector: 查询向量
+            top_k: 返回条数上限
+            threshold: 相似度阈值（0~1，仅返回 >= threshold 的结果）
+
+        Returns:
+            ``[(node_id, similarity), ...]`` 按相似度降序
+        """
+        ...
+
+    def get(self, node_id: str) -> dict[str, Any] | None:
+        """按 ID 获取节点（含向量、元数据）。默认实现返回 None。"""
+        return None
 
     def count(self) -> int:
-        return self._collection.count()
+        """返回存储中的向量总数。默认实现返回 0。"""
+        return 0
+
+
+
