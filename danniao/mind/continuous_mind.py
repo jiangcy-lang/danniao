@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -29,11 +30,15 @@ from danniao.motivation import (
 )
 
 if TYPE_CHECKING:
+    from danniao.actions.knowledge_ingestion import IngestionReport, KnowledgeIngestion
+    from danniao.actions.world_interface import WorldInterface
     from danniao.hippocampus.dynamics import NeuroDynamicsEngine
     from danniao.hippocampus.episodic_log import EpisodicLog
     from danniao.hippocampus.gate import GateResult, InformationTriggerGate
     from danniao.hippocampus.spreading import SpreadingActivation
     from danniao.hippocampus.tree import DynamicCognitiveTree
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
